@@ -9,7 +9,9 @@
 import UIKit
 
 class ToDoViewController: UITableViewController {
-    var itemArray = ["Find Mike", "Buy eggs", "Destroy Demogorgon"]
+    var itemArray = [String]()
+    
+    var defaults = UserDefaults.standard
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -23,6 +25,7 @@ class ToDoViewController: UITableViewController {
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add,
                                                             target: self,
                                                             action: #selector(addButtonPressed))
+        itemArray = defaults.object(forKey: "Array") as? [String] ?? [String]()
     }
     
     // MARK: - Add new items
@@ -33,6 +36,7 @@ class ToDoViewController: UITableViewController {
         let addAction = UIAlertAction(title: "Add Item", style: .default) { action in
             if let text = textField.text {
                 self.itemArray.insert(text, at: 0)
+                self.defaults.set(self.itemArray, forKey: "Array")
                 let indexPath = IndexPath(row: 0, section: 0)
                 self.tableView.insertRows(at: [indexPath], with: .automatic)
             }
