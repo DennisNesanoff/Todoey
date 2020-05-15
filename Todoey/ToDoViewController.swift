@@ -9,9 +9,9 @@
 import UIKit
 
 class ToDoViewController: UITableViewController {
-    var itemArray = [String]()
+    var tasks = [Task]()
     
-    var defaults = UserDefaults.standard
+//    var defaults = UserDefaults.standard
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -25,7 +25,8 @@ class ToDoViewController: UITableViewController {
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add,
                                                             target: self,
                                                             action: #selector(addButtonPressed))
-        itemArray = defaults.object(forKey: "Array") as? [String] ?? [String]()
+        
+//        itemArray = defaults.object(forKey: "Array") as? [String] ?? [String]()
     }
     
     // MARK: - Add new items
@@ -35,8 +36,10 @@ class ToDoViewController: UITableViewController {
         let alert = UIAlertController(title: "Add New Item", message: nil, preferredStyle: .alert)
         let addAction = UIAlertAction(title: "Add Item", style: .default) { action in
             if let text = textField.text {
-                self.itemArray.insert(text, at: 0)
-                self.defaults.set(self.itemArray, forKey: "Array")
+                
+                let task = Task(title: text)
+                self.tasks.insert(task, at: 0)
+//                self.defaults.set(self.itemArray, forKey: "Array")
                 let indexPath = IndexPath(row: 0, section: 0)
                 self.tableView.insertRows(at: [indexPath], with: .automatic)
             }
@@ -55,12 +58,14 @@ class ToDoViewController: UITableViewController {
 // MARK: - Table view data sourse
 extension ToDoViewController {
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return itemArray.count
+        return tasks.count
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
-        cell.textLabel?.text = itemArray[indexPath.row]
+        let task = tasks[indexPath.row]
+        
+        cell.textLabel?.text = task.title
         
         return cell
     }
@@ -69,13 +74,9 @@ extension ToDoViewController {
 // MARK: - Table view delegate
 extension ToDoViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        print(itemArray[indexPath.row])
         tableView.deselectRow(at: indexPath, animated: true)
         
-        if tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark {
-            tableView.cellForRow(at: indexPath)?.accessoryType = .none
-        } else {
-            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
-        }
+        tasks[indexPath.row].done = !tasks[indexPath.row].done
+        tableView.cellForRow(at: indexPath)?.accessoryType = tasks[indexPath.row].done ? .checkmark : .none
     }
 }
