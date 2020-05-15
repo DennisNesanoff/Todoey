@@ -10,23 +10,19 @@ import UIKit
 
 class ToDoViewController: UITableViewController {
     var tasks = [Task]()
-    
-//    var defaults = UserDefaults.standard
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?
+        .appendingPathComponent("Tasks.plist")
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.configureNavigationBar(largeTitleColor: .white,
-                                    backgoundColor: .orange,
-                                    tintColor: .white,
+        self.configureNavigationBar(largeTitleColor: .white, backgoundColor: .orange, tintColor: .white,
                                     title: "Todoey",
                                     preferredLargeTitle: true)
         
-        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add,
-                                                            target: self,
+        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self,
                                                             action: #selector(addButtonPressed))
-        
-//        itemArray = defaults.object(forKey: "Array") as? [String] ?? [String]()
+        loadData()
     }
     
     // MARK: - Add new items
@@ -36,10 +32,11 @@ class ToDoViewController: UITableViewController {
         let alert = UIAlertController(title: "Add New Item", message: nil, preferredStyle: .alert)
         let addAction = UIAlertAction(title: "Add Item", style: .default) { action in
             if let text = textField.text {
+                let newTask = Task(title: text)
+                self.tasks.insert(newTask, at: 0)
                 
-                let task = Task(title: text)
-                self.tasks.insert(task, at: 0)
-//                self.defaults.set(self.itemArray, forKey: "Array")
+                self.saveData()
+                
                 let indexPath = IndexPath(row: 0, section: 0)
                 self.tableView.insertRows(at: [indexPath], with: .automatic)
             }
@@ -52,6 +49,25 @@ class ToDoViewController: UITableViewController {
         alert.addAction(addAction)
         alert.addAction(cancelAction)
         present(alert, animated: true, completion: nil)
+    }
+    
+    func saveData() {
+        let encoder = PropertyListEncoder()
+        
+        do {
+            let data = try encoder.encode(tasks)
+            try data.write(to: dataFilePath!)
+            tableView.reloadData()
+        } catch {
+            print("Error encoding array, \(error)")
+        }
+    }
+    
+    func loadData() {
+        if let data = try? Data(contentsOf: dataFilePath!) {
+            let decoder = PropertyListDecoder()
+            tasks = try! decoder.decode([Task].self, from: data)
+        }
     }
 }
 
@@ -66,6 +82,9 @@ extension ToDoViewController {
         let task = tasks[indexPath.row]
         
         cell.textLabel?.text = task.title
+        cell.accessoryType = task.done ? .checkmark : .none
+        
+//        tableView.cellForRow(at: indexPath)?.accessoryType = tasks[indexPath.row].done ? .checkmark : .none
         
         return cell
     }
@@ -74,9 +93,9 @@ extension ToDoViewController {
 // MARK: - Table view delegate
 extension ToDoViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
-        
         tasks[indexPath.row].done = !tasks[indexPath.row].done
-        tableView.cellForRow(at: indexPath)?.accessoryType = tasks[indexPath.row].done ? .checkmark : .none
+        saveData()
+        
+        tableView.deselectRow(at: indexPath, animated: true)
     }
 }

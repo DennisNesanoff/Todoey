@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct Task {
+struct Task: Codable {
     var title: String = ""
     var done: Bool = false
 }
