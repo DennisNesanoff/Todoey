@@ -9,8 +9,9 @@
 import Foundation
 import RealmSwift
 
-class TaskRealm: Object {
+class Task: Object {
     @objc dynamic var title: String = ""
     @objc dynamic var done: Bool = false
-    var parentCtaegory = LinkingObjects(fromType: CategoryRealm.self, property: "tasks")
+    @objc dynamic var dateCreated: Date?
+    var parentCtaegory = LinkingObjects(fromType: Category.self, property: "tasks")
 }
