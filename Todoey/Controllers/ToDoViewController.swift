@@ -8,14 +8,15 @@
 
 import UIKit
 import CoreData
+import RealmSwift
 
 class ToDoViewController: UITableViewController {
     @IBOutlet var searchBar: UISearchBar!
     var tasks = [Task]()
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-    var selectedCategory: Category? {
+    var selectedCategory: CategoryRealm? {
         didSet {
-            loadData()
+//            loadData()
         }
     }
     
@@ -41,11 +42,11 @@ class ToDoViewController: UITableViewController {
                 let newTask = Task(context: self.context)
                 newTask.title = text
                 newTask.done = false
-                newTask.parentCategory = self.selectedCategory
+//                newTask.parentCategory = self.selectedCategory
                 
                 self.tasks.insert(newTask, at: 0)
                 
-                self.saveData()
+//                self.saveData()
                 
                 let indexPath = IndexPath(row: 0, section: 0)
                 self.tableView.insertRows(at: [indexPath], with: .automatic)
@@ -62,40 +63,38 @@ class ToDoViewController: UITableViewController {
         present(alert, animated: true, completion: nil)
     }
     
-    func saveData() {
-        do {
-            try context.save()
-        } catch {
-            print("Error saving context, \(error)")
-        }
-    }
+//    func saveData() {
+//        do {
+//            try context.save()
+//        } catch {
+//            print("Error saving context, \(error)")
+//        }
+//    }
 
-    func loadData(with request: NSFetchRequest<Task> = Task.fetchRequest(), predicate: NSPredicate? = nil) {
-        let categoryPredicate = NSPredicate(format: "parentCategory.name MATCHES %@", selectedCategory!.name!)
-        
-        if let additionalPredicate = predicate {
-            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [categoryPredicate, additionalPredicate])
-        } else {
-            request.predicate = categoryPredicate
-        }
-        
-        do {
-        tasks = try context.fetch(request)
-        } catch {
-            print("Error load context, \(error)")
-        }
-        
-        tableView.reloadData()
-    }
-    
-    
+//    func loadData(with request: NSFetchRequest<Task> = Task.fetchRequest(), predicate: NSPredicate? = nil) {
+//        let categoryPredicate = NSPredicate(format: "parentCategory.name MATCHES %@", selectedCategory!.name!)
+//
+//        if let additionalPredicate = predicate {
+//            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [categoryPredicate, additionalPredicate])
+//        } else {
+//            request.predicate = categoryPredicate
+//        }
+//
+//        do {
+//        tasks = try context.fetch(request)
+//        } catch {
+//            print("Error load context, \(error)")
+//        }
+//
+//        tableView.reloadData()
+//    }
 }
 
 // MARK: - Table view delegate
 extension ToDoViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tasks[indexPath.row].done = !tasks[indexPath.row].done
-        saveData()
+//        saveData()
         tableView.reloadData()
         tableView.deselectRow(at: indexPath, animated: true)
     }
@@ -127,7 +126,7 @@ extension ToDoViewController: UISearchBarDelegate {
 
         request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
 
-        loadData(with: request, predicate: predicate)
+//        loadData(with: request, predicate: predicate)
         
         searchBar.resignFirstResponder()
     }
@@ -136,10 +135,10 @@ extension ToDoViewController: UISearchBarDelegate {
         let request: NSFetchRequest<Task> = Task.fetchRequest()
         let predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
         request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
-        loadData(with: request, predicate: predicate)
+//        loadData(with: request, predicate: predicate)
         
         if searchBar.text?.count == 0 {
-            loadData()
+//            loadData()
             
             DispatchQueue.main.async {
                 searchBar.resignFirstResponder()

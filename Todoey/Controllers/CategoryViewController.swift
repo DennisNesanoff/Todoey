@@ -8,10 +8,14 @@
 
 import UIKit
 import CoreData
+import RealmSwift
 
 class CategoryViewController: UITableViewController {
-    var categories = [Category]()
-    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    let realm = try! Realm()
+    
+    var categories = [CategoryRealm]()
+//    var categories = [Category]() // CoreData
+//    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -22,7 +26,7 @@ class CategoryViewController: UITableViewController {
         
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self,
                                                             action: #selector(addButtonPressed))
-        loadData()
+//        loadData()
     }
 
     @objc func addButtonPressed() {
@@ -31,14 +35,13 @@ class CategoryViewController: UITableViewController {
         let alert = UIAlertController(title: "Add New Category", message: nil, preferredStyle: .alert)
         let addAction = UIAlertAction(title: "Add", style: .default) { action in
             if let text = textField.text {
-                let newCategory = Category(context: self.context)
+                let newCategory = CategoryRealm()
+//                let newCategory = Category(context: self.context) // CoreData
                 newCategory.name = text
                 self.categories.append(newCategory)
                 
-                self.saveData()
-//                self.tableView.reloadData()
-//                let indexPath = IndexPath(row: self.categories.count, section: 0)
-//                self.tableView.insertRows(at: [indexPath], with: .automatic)
+                self.saveData(category: newCategory)
+//                self.saveData()
             }
         }
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
@@ -52,26 +55,41 @@ class CategoryViewController: UITableViewController {
         present(alert, animated: true, completion: nil)
     }
     
-    func saveData() {
+    func saveData(category: CategoryRealm) {
         do {
-            try context.save()
-            tableView.reloadData()
+            try realm.write {
+                realm.add(category)
+            }
         } catch {
             print("Error saving context, \(error)")
-        }
-    }
-    
-    func loadData() {
-        let request: NSFetchRequest<Category> = Category.fetchRequest()
-        
-        do {
-            categories = try context.fetch(request)
-        } catch {
-            print("Error load context, \(error)")
         }
         
         tableView.reloadData()
     }
+    
+    
+    
+    
+//    func saveData() {
+//        do {
+//            try context.save() // CoreData
+//            tableView.reloadData()
+//        } catch {
+//            print("Error saving context, \(error)")
+//        }
+//    }
+    
+//    func loadData() {
+//        let request: NSFetchRequest<Category> = Category.fetchRequest()
+//
+//        do {
+//            categories = try context.fetch(request)
+//        } catch {
+//            print("Error load context, \(error)")
+//        }
+//
+//        tableView.reloadData()
+//    }
 }
 
 // MARK: - Table view delegate
