@@ -9,7 +9,7 @@
 import UIKit
 import RealmSwift
 
-class CategoryViewController: UITableViewController {
+class CategoryViewController: SwipeTableViewController {
     let realm = try! Realm()
     var categories: Results<Category>?
 
@@ -22,6 +22,7 @@ class CategoryViewController: UITableViewController {
         
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self,
                                                             action: #selector(addButtonPressed))
+        tableView.rowHeight = 60
         loadData()
     }
 
@@ -48,6 +49,7 @@ class CategoryViewController: UITableViewController {
         present(alert, animated: true, completion: nil)
     }
     
+    // MARK: - Save data
     func saveData(category: Category) {
         do {
             try realm.write {
@@ -59,9 +61,24 @@ class CategoryViewController: UITableViewController {
         tableView.reloadData()
     }
     
+    // MARK: - Load data
     func loadData() {
         categories = realm.objects(Category.self)
         tableView.reloadData()
+    }
+    
+    // MARK: - Delete data
+    override func updateModel(at indexPath: IndexPath) {
+        if let category = self.categories?[indexPath.row] {
+            
+            do {
+                try self.realm.write {
+                    self.realm.delete(category)
+                }
+            } catch {
+                print("Error saving context, \(error)")
+            }
+        }
     }
 }
 
@@ -87,7 +104,7 @@ extension CategoryViewController {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
         cell.textLabel?.text = categories?[indexPath.row].name ?? "No categories added yet"
         
         return cell

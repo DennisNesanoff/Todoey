@@ -9,7 +9,7 @@
 import UIKit
 import RealmSwift
 
-class ToDoViewController: UITableViewController {
+class ToDoViewController: SwipeTableViewController {
     let realm = try! Realm()
     var tasks: Results<Task>?
     
@@ -24,6 +24,8 @@ class ToDoViewController: UITableViewController {
         
         navigationItem.largeTitleDisplayMode = .never
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addButtonPressed))
+        
+        tableView.rowHeight = 60
     }
     
     // MARK: - Add new items
@@ -57,11 +59,26 @@ class ToDoViewController: UITableViewController {
         alert.addAction(cancelAction)
         present(alert, animated: true, completion: nil)
     }
-
+    
+    // MARK: - Load data
     func loadData() {
         tasks = selectedCategory?.tasks.sorted(byKeyPath: "title", ascending: true)
 
         tableView.reloadData()
+    }
+    
+    // MARK: - Delete data
+    override func updateModel(at indexPath: IndexPath) {
+        if let task = self.tasks?[indexPath.row] {
+            
+            do {
+                try self.realm.write {
+                    self.realm.delete(task)
+                }
+            } catch {
+                print("Error saving context, \(error)")
+            }
+        }
     }
 }
 
@@ -90,7 +107,8 @@ extension ToDoViewController {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
+        
         if let task = tasks?[indexPath.row] {
             cell.textLabel?.text = task.title
             cell.accessoryType = task.done ? .checkmark : .none
